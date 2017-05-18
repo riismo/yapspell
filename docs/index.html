@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <title>Yapspell</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="UTF-8">
+</head>
+<body>
+<h1>Yapspell</h1>
+
+<div id="main">
+  <div id="textbook">
+    <textarea id="spelltext"></textarea>
+    <input id="recalculate" type="button" value="Recalculate"></input>
+  </div>
+
+  <div id="controls">
+    <div class="control">
+      <span id="classinfo"></span><br/>
+      Class:<input id="class"></input>
+    </div>
+    <div class="control">
+      Summary:<input id="notes"></input>
+    </div>
+    <div class="control">
+      Page:<input id="page"></input>
+    </div>
+    <div class="control">
+      Check:<input id="check"></input>
+    </div>
+    <div class="control">
+      Check roll:<input id="checkroll"></input>
+    </div>
+  </div>
+
+  <div id="output">
+    <textarea id="macro"></textarea>
+  </div>
+</div>
+
+<script src="__javascript__/yapspell.min.js"></script>
+</body>
+</html>
