@@ -62,14 +62,7 @@ SCHOOL_REGEX = re.compile(
     + r'\s*\]\s*)?'
 )
 
-MACRO_TEMPLATE = '&{{template:DnD35StdRoll}} {{{{spellflag=true}}}} {{{{name= @{{character_name}} casts {title}}}}} {{{{School:={school} }}}} {{{{Level:={level} }}}} {props} {{{{Conc.:= [[ 1d20 + [[ @{{concentration}} ]] ]] }}}} {{{{check={check}}}}} {{{{checkroll={checkroll}}}}} {{{{notes={text} ({book})}}}}'
-
-def __index(instr, inchr):
-    for c in range(len(instr)):
-        if instr[c] == inchr:
-            return c
-    else:
-        return None
+MACRO_TEMPLATE = '&<template:DnD35StdRoll> <<spellflag=true>> <<name= @<character_name> casts {title}>> <<School:={school}>> <<Level:={level}>> {props} <<Conc.:=[[1d20+[[@<concentration>]]]]>> <<check={check}>> <<checkroll={checkroll}>> <<notes={text} ({book})>>'
 
 class Spell(object):
     def __init__(self, title, school, properties, text):
@@ -99,12 +92,20 @@ class Spell(object):
         return 'sf-'+self.school.split(' ')[0].strip().lower()
 
     @staticmethod
+    def __index(instr, inchr):
+        for c in range(len(instr)):
+            if instr[c] == inchr:
+                return c
+        else:
+            return None
+
+    @staticmethod
     def __parseproperties(props):
         retvald = dict()
         retvalo = list()
 
         for p in props:
-            delim = __index(p, ':')
+            delim = Spell.__index(p, ':')
             k,v = p[:delim],p[delim+1:].strip()
             retvald[k] = v
             retvalo.append(k)
@@ -123,11 +124,12 @@ class Spell(object):
         if save == 'None':
             return save
         return (save
-                + ' (DC [[ @{{spelldc{level}}} + @{{{spellfocus}}} ]])'.format(
-                    level=cl,
-                    spellfocus=self.__spellfocus(),
-                )
-        )
+                + (' (DC [[ @<spelldc{level}> + @<{spellfocus}> ]])'
+                   .format(
+                       level=cl,
+                       spellfocus=self.__spellfocus())
+                   .replace('<','{')
+                   .replace('>','}')))
 
     def textsummary(self):
         return self.text.split('.')[0] + '.'
@@ -156,20 +158,26 @@ class Spell(object):
                 abbrev = ABBREV[p]
             else:
                 abbrev = p
-            props.append('{{{{{}:={} }}}}'.format(abbrev, formatted))
+            props.append('<<{}:={} >>'
+                         .format(abbrev, formatted)
+                         .replace('<','{')
+                         .replace('>','}'))
         return ' '.join(props)
 
     def macro(self, cl):
-        return MACRO_TEMPLATE.format(
-            title=self.title,
-            school=self.school,
-            level=self.classlevel(cl),
-            props=self.__macroproperties(cl),
-            text=self.textsummary(),
-            book=self.book,
-            check=self.check,
-            checkroll=self.checkroll,
-        )
+        return (
+            MACRO_TEMPLATE
+            .format(
+                title=self.title,
+                school=self.school,
+                level=self.classlevel(cl),
+                props=self.__macroproperties(cl),
+                text=self.textsummary(),
+                book=self.book,
+                check=self.check,
+                checkroll=self.checkroll)
+            .replace('<','{')
+            .replace('>','}'))
 
 def isschoolstart(line):
     for s in SCHOOLS:
@@ -273,7 +281,7 @@ def setup():
     document.getElementById('page').value = 'PH ###'
     document.getElementById('check').value = 'Target gains'
     document.getElementById('checkroll').value = (
-        '[[ 1d1+{{@{{casterlevel}},10}}dh1 ]] quatloos.'
+        '[[1d1+{@{casterlevel},10}dh1]] quatloos.'
     )
 
     document.getElementById('recalculate').addEventListener('mousedown', recalculate)
